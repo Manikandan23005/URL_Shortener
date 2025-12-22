@@ -14,10 +14,10 @@ A simple and efficient web application that converts long URLs into short, share
 
 ## Tech Stack
 
-- **Backend**: [Specify your backend technology]
-- **Frontend**: [Specify your frontend technology]
-- **Database**: [Specify your database]
-- **Additional Tools**: [List any other relevant tools]
+- **Backend**: Python-Flask
+- **Frontend**: HTML,CSS,Jinja2
+- **Database**: Sqlite
+- **Additional Tools**: Docker
 
 ## Installation
 
