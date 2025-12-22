@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}
+    URL Shortener - Fast, Secure & Analytics-Powered
+{% endblock %}              
+
+{% block content %}
+    {% if current_user.is_authenticated %}
+        <div class="hero-section">
+            <h1>Welcome back, {{ current_user.username }}! 👋</h1>
+            <p>Manage your shortened URLs and track their performance with detailed analytics.</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('url_dashboard') }}">Go to Dashboard</a>
+            </div>
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <span class="stat-number">{{ url_count or 0 }}</span>
+                <span class="stat-label">URLs Created</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">{{ total_clicks or 0 }}</span>
+                <span class="stat-label">Total Clicks</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">{{ active_urls or 0 }}</span>
+                <span class="stat-label">Active Links</span>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="hero-section">
+            <h1>Shorten URLs, Track Everything 🚀</h1>
+            <p>Create powerful short links with comprehensive analytics. Know your audience, optimize your reach, and grow your impact.</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('signup') }}">Get Started Free</a>
+                <a href="{{ url_for('login') }}" style="background: transparent; border: 2px solid var(--primary-color);">Login</a>
+            </div>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <h3>Lightning Fast</h3>
+                <p>Create shortened URLs in milliseconds. Our optimized infrastructure ensures your links load instantly anywhere in the world.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">📊</span>
+                <h3>Deep Analytics</h3>
+                <p>Track clicks, geographic location, devices, browsers, and referrers. Get insights that matter for your business.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🔒</span>
+                <h3>Secure & Private</h3>
+                <p>Your data is encrypted and protected. We never sell your information and ensure maximum security for all your links.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🎯</span>
+                <h3>Custom Short Codes</h3>
+                <p>Create memorable, branded short links that represent your brand and are easy to share across all platforms.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">📱</span>
+                <h3>Mobile Optimized</h3>
+                <p>Manage your links on the go. Our responsive design works perfectly on any device, anywhere, anytime.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🌍</span>
+                <h3>Global Reach</h3>
+                <p>Track visitors from around the world. See which countries engage with your content and optimize accordingly.</p>
+            </div>
+        </div>
+
+        <div class="info-banner">
+            <p><strong>🎉 Start Free:</strong> No credit card required. Create unlimited short links and access all analytics features from day one.</p>
+        </div>
+    {% endif %}
+{% endblock %}

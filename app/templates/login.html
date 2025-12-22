@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}
+    Login page
+{% endblock %}
+{% block content %}
+    <h2>Login</h2>
+    <form action="{{ url_for('login') }}" method="post">
+        <input type="text" name="username" placeholder="Username" required="required"><br>
+        <input type="password" name="password" placeholder="Password" required="required"><br>
+        <input type="submit" value="Login">
+        <div class="links"><p>If you don't have an account, <a href="{{ url_for('signup') }}">Sign Up</a></p></div>
+    </form>
+{% endblock %}
