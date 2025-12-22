@@ -22,9 +22,8 @@ A simple and efficient web application that converts long URLs into short, share
 ## Installation
 
 ### Prerequisites
-- [List required software and versions]
-- Node.js v14+ (if applicable)
-- npm or yarn (if applicable)
+- Docker
+- Docker Compose
 
 ### Setup Steps
 
@@ -34,23 +33,28 @@ git clone https://github.com/yourusername/URL-Shortener.git
 cd URL-Shortener
 ```
 
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Configure environment variables:
+2. Configure environment variables:
 ```bash
 cp .env.example .env
 # Edit .env with your configuration
 ```
 
-4. Start the application:
+3. Build and start the application with Docker Compose:
 ```bash
-npm start
+docker-compose up -d
 ```
 
 The application will be available at `http://localhost:3000`
+
+To stop the application:
+```bash
+docker-compose down
+```
+
+To view logs:
+```bash
+docker-compose logs -f
+```
 
 ## Usage
 
@@ -86,12 +90,21 @@ GET /:shortCode
 
 ```
 URL-Shortener/
-├── src/
-├── public/
-├── tests/
-├── .env.example
-├── package.json
+├── app/
+|   ├── templates/
+|   ├── static/
+|   ├── __init__.py
+|   ├── models.py
+|   ├── route.py
+├── instance/
+├── migrations/
+├── venv/
+├── app.py
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
 └── README.md
+
 ```
 
 ## Contributing
