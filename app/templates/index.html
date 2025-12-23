@@ -2,9 +2,9 @@
 
 {% block title %}
     URL Shortener - Fast, Secure & Analytics-Powered
-{% endblock %}              
-
-{% block content %}
+    {% endblock %}              
+    
+    {% block content %}
     {% if current_user.is_authenticated %}
         <div class="hero-section">
             <h1>Welcome back, {{ current_user.username }}! 👋</h1>

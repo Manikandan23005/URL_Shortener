@@ -14,7 +14,7 @@ A simple and efficient web application that converts long URLs into short, share
 
 ## Tech Stack
 
-- **Backend**: Python-Flask
+- **Backend**: Python-Flask,SQLalchemy
 - **Frontend**: HTML,CSS,Jinja2
 - **Database**: Sqlite
 - **Additional Tools**: Docker
