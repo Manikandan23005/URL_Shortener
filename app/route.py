@@ -9,10 +9,13 @@ def register_routes(app,db,bcrypt,limiter):
 
     @app.route('/', methods=['GET', 'POST'])
     def index():
-        url_count=URLMapping.query.count()
-        total_clicks=Click.query.count()
-        active_urls=URLMapping.query.filter_by(is_active=True).count()
-        return render_template('index.html', user=current_user, url_count=url_count, total_clicks=total_clicks, active_urls=active_urls)
+        if current_user.is_anonymous:
+            return render_template('index.html')
+        else:
+            url_count=URLMapping.query.filter_by(user_id=current_user.id).count()
+            total_short=URLMapping.query.filter_by(user_id=current_user.id).count()
+            active_urls=URLMapping.query.filter_by(is_active=True, user_id=current_user.id).count()
+            return render_template('index.html', user=current_user, url_count=url_count, total_short=total_short, active_urls=active_urls)
 
     @app.route('/login', methods=['GET', 'POST'])
     @limiter.limit("5 per minute")
@@ -38,11 +41,14 @@ def register_routes(app,db,bcrypt,limiter):
             username = request.form.get('username')
             password = request.form.get('password')
             mail = request.form.get('email')
-            hashed_password = bcrypt.generate_password_hash(password)
-            new_user = User(username=username, password=hashed_password, email=mail)
-            db.session.add(new_user)
-            db.session.commit()
-            return redirect(url_for('index'))
+            if username == "admin":
+                return "Username 'admin' is reserved Use a different username", 400
+            else:
+                hashed_password = bcrypt.generate_password_hash(password)
+                new_user = User(username=username, password=hashed_password, email=mail)
+                db.session.add(new_user)
+                db.session.commit()
+                return redirect(url_for('index'))
         
     @app.route('/logout')
     @login_required
@@ -115,7 +121,7 @@ def register_routes(app,db,bcrypt,limiter):
         
         new_click = Click(
             url_mapping_id=url.id,
-            user_agent=f"{browser} on {os}",
+            user_agent=request.headers.get('User-Agent'),
             ip_address=request.remote_addr,
             referrer=request.referrer,
             country=request.headers.get('X-Country', 'Unknown'),
@@ -145,10 +151,10 @@ def register_routes(app,db,bcrypt,limiter):
         ).filter_by(url_mapping_id=url.id).group_by(func.date(Click.click_time)).all()
         )
 
-        country_stats = (
+        devices = (
             db.session.query(
-            Click.country, func.count(Click.id)
-        ).filter_by(url_mapping_id=url.id).group_by(Click.country).all()
+            Click.device_type, func.count(Click.id)
+        ).filter_by(url_mapping_id=url.id).group_by(Click.device_type).all()
         )
         
         user_agent = (
@@ -167,7 +173,7 @@ def register_routes(app,db,bcrypt,limiter):
                                url=url, 
                                total_clicks=total_clicks,
                                clicks_over_time=clicks_over_time, 
-                               country_stats=country_stats,
+                               devices=devices,
                                user_agent=user_agent,
                                referrer_stats=referrer_stats)
 

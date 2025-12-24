@@ -24,8 +24,8 @@ Analytics - {{ url.short_code }}
         <span class="stat-label">Active Days</span>
     </div>
     <div class="stat-card">
-        <span class="stat-number">{{ country_stats|length }}</span>
-        <span class="stat-label">Countries</span>
+        <span class="stat-number">{{ clicks_over_time|length }}</span>
+        <span class="stat-label">Clicks</span>
     </div>
     <div class="stat-card">
         <span class="stat-number">{{ user_agent|length }}</span>
@@ -49,19 +49,19 @@ Analytics - {{ url.short_code }}
 {% endfor %}
 </ul>
 
-<h3>🌍 Geographic Distribution</h3>
+<h3>Device</h3>
 <ul>
-{% for country, count in country_stats %}
+{% for device, count in devices %}
     <li style="--bar-width: {{ (count / total_clicks * 100)|int }}%;">
-        <strong>{{ country or '🌐 Unknown' }}</strong>
+        <strong>{{ device or '🌐 Unknown' }}</strong>
         <span style="color: var(--accent-color); font-weight: 600;">{{ count }} clicks ({{ (count / total_clicks * 100)|round(1) }}%)</span>
     </li>
 {% else %}
-    <li style="text-align: center;">No geographic data available</li>
+    <li style="text-align: center;">No Device data available</li>
 {% endfor %}
 </ul>
 
-<h3>💻 Devices & Browsers</h3>
+<h3>💻 OS & Browsers</h3>
 <ul>
 {% for device, count in user_agent %}
     <li style="--bar-width: {{ (count / total_clicks * 100)|int }}%;">
