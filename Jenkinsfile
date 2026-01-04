@@ -16,32 +16,37 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    dockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                }
+                sh '''
+                  docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
+                  docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_IMAGE:latest
+                '''
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    dockerImage.inside {
-                        sh '''
-                          sleep 3
-                          curl -f http://localhost:5000 || exit 1
-                        '''
-                    }
-                }
+                sh '''
+                  docker run -d -p 5000:5000 --name test_container $DOCKER_IMAGE:$DOCKER_TAG
+                  sleep 5
+                  curl -f http://localhost:5000
+                '''
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-creds') {
-                        dockerImage.push("${DOCKER_TAG}")
-                        dockerImage.push('latest')
-                    }
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                      docker push $DOCKER_IMAGE:$DOCKER_TAG
+                      docker push $DOCKER_IMAGE:latest
+                    '''
                 }
             }
         }
@@ -49,7 +54,10 @@ pipeline {
 
     post {
         always {
-            sh 'docker system prune -f || true'
+            sh '''
+              docker rm -f test_container || true
+              docker system prune -f || true
+            '''
         }
     }
 }
