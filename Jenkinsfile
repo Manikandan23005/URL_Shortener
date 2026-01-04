@@ -2,11 +2,12 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'your-dockerhub-username/url-shortener'
-        DOCKER_TAG = "${env.BUILD_NUMBER}"
+        DOCKER_IMAGE = "manikandan791/url-shortener"
+        DOCKER_TAG   = "${BUILD_NUMBER}"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -15,34 +16,31 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    dockerImage = docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                }
+                sh '''
+                  docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
+                  docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_IMAGE:latest
+                '''
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    // Run a basic test: start the container and check if Flask app starts
-                    dockerImage.inside('-p 5000:5000') {
-                        sh '''
-                            timeout 10 flask run --host=0.0.0.0 --port=5000 &
-                            sleep 5
-                            curl -f http://localhost:5000 || exit 1
-                        '''
-                    }
-                }
+                sh '''
+                  docker run -d -p 5000:5000 --name test_container $DOCKER_IMAGE:$DOCKER_TAG
+                  sleep 5
+                  curl -f http://localhost:5000
+                '''
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-credentials') {
-                        dockerImage.push("${DOCKER_TAG}")
-                        dockerImage.push('latest')
-                    }
+                withCredentials([string(credentialsId: 'dockerhub-token', variable: 'DOCKER_TOKEN')]) {
+                    sh '''
+                      echo $DOCKER_TOKEN | docker login -u manikandan791 --password-stdin
+                      docker push $DOCKER_IMAGE:$DOCKER_TAG
+                      docker push $DOCKER_IMAGE:latest
+                    '''
                 }
             }
         }
@@ -50,7 +48,10 @@ pipeline {
 
     post {
         always {
-            sh 'docker system prune -f'
+            sh '''
+              docker rm -f test_container || true
+              docker system prune -f || true
+            '''
         }
     }
 }
