@@ -43,6 +43,10 @@ class Click(db.Model):
     ip_address = db.Column(db.String(45), nullable=True)
     referrer = db.Column(db.Text, nullable=True)
     country = db.Column(db.String(100), nullable=True)
+    region = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    browser = db.Column(db.String(50), nullable=True)
+    os = db.Column(db.String(50), nullable=True)
     device_type = db.Column(db.String(50), nullable=True)
 
     def __repr__(self):

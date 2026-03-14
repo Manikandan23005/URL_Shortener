@@ -1,32 +1,55 @@
 {% extends 'base.html' %}
-{% block title %}
-    URL Dashboard
-{% endblock %}
-{% block content %}
-<h2>Shortern Your URLs</h2>
+{% block title %}URL Dashboard{% endblock %}
 
-<form method="POST" action="{{ url_for('shorten_url') }}">
-    <input type="url" name="original_url" required>
-    <button type="submit">Shorten</button>
+{% block content %}
+<div class="analytics-header">
+    <h2>🔗 Your URL Dashboard</h2>
+    <p>Manage, create, and track your shortened links seamlessly.</p>
+</div>
+
+<form method="POST" action="{{ url_for('shorten_url') }}" class="dashboard-form">
+    <h3>✨ Shorten a New URL</h3>
+    <input type="url" name="original_url" placeholder="https://example.com/very/long/url" required>
+    <input type="text" name="custom_code" placeholder="Custom Short Code (Optional)">
+    <label class="checkbox-label"
+        style="display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; color: var(--text-secondary);">
+        <input type="checkbox" name="is_private" style="width: auto;"> 🔒 Make this link private
+    </label>
+    <button type="submit">Shorten URL 🚀</button>
 </form>
-<h2>Your URLs</h2>
-<hr>
+
+<div class="info-banner">
+    <p><strong>📋 Your Active Links:</strong> Click "Analytics" next to any URL to view its performance statistics.</p>
+</div>
 
 <ul>
-{% for url in url_mappings %}
+    <h3>📋 Active URLs</h3>
+    {% for url in url_mappings %}
     <li>
-        {{ url.original_url }} →
-        <a href="{{ url_for('redirect_short_url', short_code=url.short_code) }}">
-            /{{ url.short_code }}
-        </a>
+        <div style="flex: 1; min-width: 250px;">
+            <strong style="color: var(--text-primary);">{{ url.original_url[:50] }}{% if url.original_url|length > 50
+                %}...{% endif %}</strong>
+        </div>
 
-        | <a href="{{ url_for('analytics', short_code=url.short_code) }}">
-            Analytics
-          </a>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <a href="{{ url_for('redirect_short_url', short_code=url.short_code) }}" target="_blank"
+                style="background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary-color);">
+                /{{ url.short_code }}
+            </a>
+            <a href="{{ url_for('analytics', short_code=url.short_code) }}"
+                style="background: rgba(236, 72, 153, 0.1); border: 1px solid var(--secondary-color); color: var(--secondary-color);">
+                📊 Analytics
+            </a>
+        </div>
     </li>
-{% else %}
-    <li>No URLs yet. Go create one.</li>
-{% endfor %}
+    {% else %}
+    <li style="justify-content: center; color: var(--text-muted);">No URLs shortened yet. Create your first one above!
+    </li>
+    {% endfor %}
 </ul>
-<div class="links"><a href="{{ url_for('logout') }}" style="padding-left: 10px;">Logout</a></div>
+
+<div class="quick-actions">
+    <a href="{{ url_for('logout') }}" class="action-btn"
+        style="background: transparent; border-color: var(--border);">👋 Logout</a>
+</div>
 {% endblock %}

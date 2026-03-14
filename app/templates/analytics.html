@@ -15,7 +15,8 @@ Analytics - {{ url.short_code }}
 </div>
 
 <div class="info-banner">
-    <p>🎯 <strong>Performance Overview:</strong> Track your link's engagement across different dimensions. Use this data to optimize your marketing campaigns.</p>
+    <p>🎯 <strong>Performance Overview:</strong> Track your link's engagement across different dimensions. Use this data
+        to optimize your marketing campaigns.</p>
 </div>
 
 <div class="stats-container">
@@ -28,8 +29,12 @@ Analytics - {{ url.short_code }}
         <span class="stat-label">Clicks</span>
     </div>
     <div class="stat-card">
-        <span class="stat-number">{{ user_agent|length }}</span>
-        <span class="stat-label">Device Types</span>
+        <span class="stat-number">{{ browsers|length }}</span>
+        <span class="stat-label">Browsers</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ countries|length }}</span>
+        <span class="stat-label">Geographic Locations</span>
     </div>
     <div class="stat-card">
         <span class="stat-number">{{ referrer_stats|length }}</span>
@@ -39,54 +44,97 @@ Analytics - {{ url.short_code }}
 
 <h3>📅 Clicks Over Time</h3>
 <ul>
-{% for date, count in clicks_over_time %}
+    {% for date, count in clicks_over_time %}
     <li style="--bar-width: {{ (count / total_clicks * 100)|int }}%;">
         <strong>{{ date }}</strong>
         <span style="color: var(--success); font-weight: 600;">{{ count }} clicks</span>
     </li>
-{% else %}
+    {% else %}
     <li style="text-align: center;">No click data available yet</li>
-{% endfor %}
+    {% endfor %}
 </ul>
 
 <h3>Device</h3>
 <ul>
-{% for device, count in devices %}
+    {% for device, count in devices %}
     <li style="--bar-width: {{ (count / total_clicks * 100)|int }}%;">
         <strong>{{ device or '🌐 Unknown' }}</strong>
-        <span style="color: var(--accent-color); font-weight: 600;">{{ count }} clicks ({{ (count / total_clicks * 100)|round(1) }}%)</span>
+        <span style="color: var(--accent-color); font-weight: 600;">{{ count }} clicks ({{ (count / total_clicks *
+            100)|round(1) }}%)</span>
     </li>
-{% else %}
+    {% else %}
     <li style="text-align: center;">No Device data available</li>
-{% endfor %}
+    {% endfor %}
 </ul>
 
-<h3>💻 OS & Browsers</h3>
+<h3>💻 Browsers</h3>
 <ul>
-{% for device, count in user_agent %}
+    {% for b, count in browsers %}
     <li style="--bar-width: {{ (count / total_clicks * 100)|int }}%;">
-        <strong>{{ device or '❓ Unknown' }}</strong>
-        <span style="color: var(--primary-light); font-weight: 600;">{{ count }} clicks ({{ (count / total_clicks * 100)|round(1) }}%)</span>
+        <strong>{{ b or '❓ Unknown' }}</strong>
+        <span style="color: var(--primary-light); font-weight: 600;">{{ count }} clicks ({{ (count / total_clicks *
+            100)|round(1) }}%)</span>
     </li>
-{% else %}
-    <li style="text-align: center;">No device data available</li>
-{% endfor %}
+    {% else %}
+    <li style="text-align: center;">No browser data available</li>
+    {% endfor %}
+</ul>
+
+<h3>🌍 Countries</h3>
+<ul>
+    {% for c, count in countries %}
+    <li style="--bar-width: {{ (count / total_clicks * 100)|int }}%;">
+        <strong>{{ c or '❓ Unknown' }}</strong>
+        <span style="color: var(--primary-light); font-weight: 600;">{{ count }} clicks ({{ (count / total_clicks *
+            100)|round(1) }}%)</span>
+    </li>
+    {% else %}
+    <li style="text-align: center;">No location data available</li>
+    {% endfor %}
+</ul>
+
+<h3>🗺️ Regions</h3>
+<ul>
+    {% for r, count in regions %}
+    <li style="--bar-width: {{ (count / total_clicks * 100)|int }}%;">
+        <strong>{{ r or '❓ Unknown' }}</strong>
+        <span style="color: var(--primary-light); font-weight: 600;">{{ count }} clicks ({{ (count / total_clicks *
+            100)|round(1) }}%)</span>
+    </li>
+    {% else %}
+    <li style="text-align: center;">No region data available</li>
+    {% endfor %}
+</ul>
+
+<h3>🏙️ Cities</h3>
+<ul>
+    {% for ci, count in cities %}
+    <li style="--bar-width: {{ (count / total_clicks * 100)|int }}%;">
+        <strong>{{ ci or '❓ Unknown' }}</strong>
+        <span style="color: var(--primary-light); font-weight: 600;">{{ count }} clicks ({{ (count / total_clicks *
+            100)|round(1) }}%)</span>
+    </li>
+    {% else %}
+    <li style="text-align: center;">No city data available</li>
+    {% endfor %}
 </ul>
 
 <h3>🔗 Traffic Sources</h3>
 <ul>
-{% for ref, count in referrer_stats %}
+    {% for ref, count in referrer_stats %}
     <li style="--bar-width: {{ (count / total_clicks * 100)|int }}%;">
         <strong>{{ ref or '🎯 Direct / No Referrer' }}</strong>
-        <span style="color: var(--secondary-color); font-weight: 600;">{{ count }} clicks ({{ (count / total_clicks * 100)|round(1) }}%)</span>
+        <span style="color: var(--secondary-color); font-weight: 600;">{{ count }} clicks ({{ (count / total_clicks *
+            100)|round(1) }}%)</span>
     </li>
-{% else %}
+    {% else %}
     <li style="text-align: center;">No referrer data available</li>
-{% endfor %}
+    {% endfor %}
 </ul>
 
 <div class="info-banner" style="margin-top: 2rem;">
-    <p>💡 <strong>Insights:</strong> Use this data to understand your audience better. High direct traffic means good brand recall, while diverse referrers indicate successful multi-channel marketing.</p>
+    <p>💡 <strong>Insights:</strong> Use this data to understand your audience better. High direct traffic means good
+        brand recall, while diverse referrers indicate successful multi-channel marketing.</p>
 </div>
 
 <div class="quick-actions">

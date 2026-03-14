@@ -68,24 +68,32 @@ def register_routes(app,db,bcrypt,limiter):
     def shorten_url():
 
         original_url = request.form.get('original_url')
+        custom_code = request.form.get('custom_code')
+        is_private = request.form.get('is_private') == 'on'
+
         if not original_url:
             return "Original URL is required", 400
         
         existing = URLMapping.query.filter_by(original_url=original_url, user_id=current_user.id).first()
-        if existing:
+        if existing and not custom_code:
             return redirect(url_for('url_dashboard'))
         
-        import string,random
-        def generate_short_code(length=6):
-            characters = string.ascii_letters + string.digits
-            return ''.join(random.choice(characters) for _ in range(length))
+        if custom_code:
+            if URLMapping.query.filter_by(short_code=custom_code).first():
+                return "Custom code already in use", 400
+            short_code = custom_code
+        else:
+            import string,random
+            def generate_short_code(length=6):
+                characters = string.ascii_letters + string.digits
+                return ''.join(random.choice(characters) for _ in range(length))
 
-        short_code = generate_short_code()  
+            short_code = generate_short_code()  
 
-        while URLMapping.query.filter_by(short_code=short_code).first() is not None:
-            short_code = generate_short_code()
+            while URLMapping.query.filter_by(short_code=short_code).first() is not None:
+                short_code = generate_short_code()
         
-        new_mapping = URLMapping(original_url=original_url, short_code=short_code, user_id=current_user.id)
+        new_mapping = URLMapping(original_url=original_url, short_code=short_code, user_id=current_user.id, is_private=is_private)
         db.session.add(new_mapping)
         db.session.commit()
         return redirect(url_for('url_dashboard'))
@@ -119,12 +127,56 @@ def register_routes(app,db,bcrypt,limiter):
         browser = ua.browser.family
         os = ua.os.family   
         
+        import json
+        import urllib.request
+        import ipaddress
+        
+        # Get real IP, handling Docker/proxy networks
+        if request.headers.getlist("X-Forwarded-For"):
+            ip = request.headers.getlist("X-Forwarded-For")[0].split(',')[0].strip()
+        elif request.headers.get("X-Real-IP"):
+            ip = request.headers.get("X-Real-IP")
+        else:
+            ip = request.remote_addr
+
+        country = request.headers.get('X-Country', 'Unknown')
+        region = 'Unknown'
+        city = 'Unknown'
+        
+        # Check if the IP is a private/local network IP (like 127.0.0.1 or 172.20.0.x from Docker)
+        is_private = False
+        try:
+            is_private = ipaddress.ip_address(ip).is_private
+        except ValueError:
+            pass
+
+        if country == 'Unknown':
+            try:
+                # If local/private, let ip-api resolve the machine's public IP natively.
+                api_url = "http://ip-api.com/json/" if is_private else f"http://ip-api.com/json/{ip}"
+                req = urllib.request.Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
+                
+                with urllib.request.urlopen(req, timeout=3) as response:
+                    data = json.loads(response.read().decode())
+                    if data.get('status') == 'success':
+                        country = data.get('country', 'Unknown')
+                        region = data.get('regionName', 'Unknown')
+                        city = data.get('city', 'Unknown')
+                            
+            except Exception as e:
+                print(e)
+                pass
+
         new_click = Click(
             url_mapping_id=url.id,
             user_agent=request.headers.get('User-Agent'),
-            ip_address=request.remote_addr,
+            ip_address=ip,
             referrer=request.referrer,
-            country=request.headers.get('X-Country', 'Unknown'),
+            country=country,
+            region=region,
+            city=city,
+            browser=ua.browser.family,
+            os=ua.os.family,
             device_type='Mobile' if ua.is_mobile else 'Tablet' if ua.is_tablet else 'PC' if ua.is_pc else 'Bot' if ua.is_bot else 'Other'
         )
 
@@ -157,11 +209,29 @@ def register_routes(app,db,bcrypt,limiter):
         ).filter_by(url_mapping_id=url.id).group_by(Click.device_type).all()
         )
         
-        user_agent = (
+        browsers = (
             db.session.query(
-            Click.user_agent, func.count(Click.id)
-        ).filter_by(url_mapping_id=url.id).group_by(Click.user_agent).all()
-        )   
+            Click.browser, func.count(Click.id)
+        ).filter_by(url_mapping_id=url.id).group_by(Click.browser).all()
+        )
+
+        countries = (
+            db.session.query(
+            Click.country, func.count(Click.id)
+        ).filter_by(url_mapping_id=url.id).group_by(Click.country).all()
+        )
+
+        regions = (
+            db.session.query(
+            Click.region, func.count(Click.id)
+        ).filter_by(url_mapping_id=url.id).group_by(Click.region).all()
+        )
+
+        cities = (
+            db.session.query(
+            Click.city, func.count(Click.id)
+        ).filter_by(url_mapping_id=url.id).group_by(Click.city).all()
+        )
 
         referrer_stats = (
             db.session.query(
@@ -174,6 +244,9 @@ def register_routes(app,db,bcrypt,limiter):
                                total_clicks=total_clicks,
                                clicks_over_time=clicks_over_time, 
                                devices=devices,
-                               user_agent=user_agent,
+                               browsers=browsers,
+                               countries=countries,
+                               regions=regions,
+                               cities=cities,
                                referrer_stats=referrer_stats)
 
